@@ -1,0 +1,1346 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FreshFind  - eGreen Basket & Local Farmers Directory</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Font: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Tailwind Custom Configuration -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        egreen: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            200: '#bbf7d0',
+                            300: '#86efac',
+                            400: '#4ade80',
+                            500: '#22c55e',
+                            600: '#2e7d32', // Primary Brand Green
+                            700: '#1b5e20', // Dark Brand Green
+                            800: '#166534',
+                            900: '#14532d',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8faf9;
+            color: #1f2937;
+        }
+
+        /* Glassmorphism utility */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(46, 125, 50, 0.12);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #81c784;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #2e7d32;
+        }
+
+        /* Animations */
+        @keyframes pulseGlow {
+            0%, 100% { box-shadow: 0 0 15px rgba(46, 125, 50, 0.2); }
+            50% { box-shadow: 0 0 25px rgba(46, 125, 50, 0.5); }
+        }
+        .pulse-glow {
+            animation: pulseGlow 3s infinite;
+        }
+
+        /* Chatbot Container Transition */
+        .chat-slide-enter {
+            transform: translateY(20px);
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .chat-slide-enter-active {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="relative min-h-screen flex flex-col justify-between overflow-x-hidden">
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed top-20 right-5 z-50 flex flex-col gap-3 pointer-events-none"></div>
+
+    <!-- Top Navigation Header -->
+    <header class="sticky top-0 z-40 w-full glass-panel border-b border-emerald-100 transition-all">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                
+                <!-- Logo -->
+                <div class="flex items-center gap-3 cursor-pointer" onclick="navigateTo('home')">
+                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-egreen-700 to-egreen-500 flex items-center justify-center text-white shadow-lg shadow-emerald-700/20">
+                        <i class="fa-solid font-bold text-2xl fa-basket-shopping"></i>
+                    </div>
+                    <div>
+                        <span class="text-2xl font-extrabold text-egreen-700 tracking-tight">FreshFind <span class="text-egreen-500">🌿</span></span>
+                        <p class="text-[10px] font-semibold text-emerald-600 uppercase tracking-widest">eGreen Basket Directory</p>
+                    </div>
+                </div>
+
+                <!-- Desktop Nav Links -->
+                <nav class="hidden md:flex items-center gap-1 lg:gap-2">
+                    <button onclick="navigateTo('home')" id="nav-home" class="nav-btn px-4 py-2 rounded-xl text-sm font-semibold text-emerald-900 hover:bg-emerald-50 transition-colors">Home</button>
+                    <button onclick="navigateTo('markets')" id="nav-markets" class="nav-btn px-4 py-2 rounded-xl text-sm font-semibold text-gray-600 hover:text-emerald-900 hover:bg-emerald-50 transition-colors">Markets</button>
+                    <button onclick="navigateTo('produce')" id="nav-produce" class="nav-btn px-4 py-2 rounded-xl text-sm font-semibold text-gray-600 hover:text-emerald-900 hover:bg-emerald-50 transition-colors">Produce Guide</button>
+                    <button onclick="navigateTo('bookmarks')" id="nav-bookmarks" class="nav-btn px-4 py-2 rounded-xl text-sm font-semibold text-gray-600 hover:text-emerald-900 hover:bg-emerald-50 transition-colors relative">
+                        Bookmarks
+                        <span id="bookmark-badge" class="hidden absolute -top-1 -right-1 bg-amber-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">0</span>
+                    </button>
+                    <button onclick="navigateTo('about')" id="nav-about" class="nav-btn px-4 py-2 rounded-xl text-sm font-semibold text-gray-600 hover:text-emerald-900 hover:bg-emerald-50 transition-colors">About Us</button>
+                    <button onclick="navigateTo('contact')" id="nav-contact" class="nav-btn px-4 py-2 rounded-xl text-sm font-semibold text-gray-600 hover:text-emerald-900 hover:bg-emerald-50 transition-colors">Contact</button>
+                </nav>
+
+                <!-- Right Side Tools: Clock, Visitors, Auth -->
+                <div class="hidden lg:flex items-center gap-4 border-l border-emerald-100 pl-4">
+                    <!-- Realtime Clock -->
+                    <div class="text-right">
+                        <div id="realtime-clock" class="text-xs font-bold text-egreen-700 font-mono">00:00:00 AM</div>
+                        <div class="text-[10px] text-gray-400 font-medium flex items-center gap-1 justify-end">
+                            <i class="fa-solid fa-users text-emerald-500"></i> Visitors: <span id="visitor-counter" class="font-bold text-gray-600">1,482</span>
+                        </div>
+                    </div>
+
+                    <!-- Auth Modal Trigger Buttons -->
+                    <button onclick="openAuthModal('login')" class="px-4 py-2 text-xs font-bold text-egreen-700 bg-emerald-50 border border-emerald-200 rounded-xl hover:bg-emerald-100 transition-all">Log In</button>
+                    <button onclick="openAuthModal('signup')" class="px-4 py-2 text-xs font-bold text-white bg-egreen-600 rounded-xl shadow-md hover:bg-egreen-700 transition-all">Sign Up</button>
+                </div>
+
+                <!-- Mobile Hamburger Button -->
+                <div class="md:hidden flex items-center gap-2">
+                    <button onclick="toggleMobileMenu()" class="p-2 text-emerald-800 hover:bg-emerald-50 rounded-lg">
+                        <i class="fa-solid fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Menu Drawer -->
+        <div id="mobile-menu" class="hidden md:hidden border-t border-emerald-100 bg-white/95 px-4 pt-3 pb-6 space-y-2">
+            <button onclick="navigateTo('home'); toggleMobileMenu()" class="block w-full text-left px-3 py-2 rounded-lg font-semibold text-gray-700 hover:bg-emerald-50">Home</button>
+            <button onclick="navigateTo('markets'); toggleMobileMenu()" class="block w-full text-left px-3 py-2 rounded-lg font-semibold text-gray-700 hover:bg-emerald-50">Market Directory</button>
+            <button onclick="navigateTo('produce'); toggleMobileMenu()" class="block w-full text-left px-3 py-2 rounded-lg font-semibold text-gray-700 hover:bg-emerald-50">Produce Guide</button>
+            <button onclick="navigateTo('bookmarks'); toggleMobileMenu()" class="block w-full text-left px-3 py-2 rounded-lg font-semibold text-gray-700 hover:bg-emerald-50">Saved Bookmarks</button>
+            <button onclick="navigateTo('about'); toggleMobileMenu()" class="block w-full text-left px-3 py-2 rounded-lg font-semibold text-gray-700 hover:bg-emerald-50">About Us</button>
+            <button onclick="navigateTo('contact'); toggleMobileMenu()" class="block w-full text-left px-3 py-2 rounded-lg font-semibold text-gray-700 hover:bg-emerald-50">Contact Us</button>
+            <div class="pt-2 flex gap-2">
+                <button onclick="openAuthModal('login')" class="w-1/2 py-2 text-center text-xs font-bold text-egreen-700 bg-emerald-50 rounded-lg">Log In</button>
+                <button onclick="openAuthModal('signup')" class="w-1/2 py-2 text-center text-xs font-bold text-white bg-egreen-600 rounded-lg">Sign Up</button>
+            </div>
+        </div>
+
+        <!-- Breadcrumb Bar -->
+        <div class="bg-emerald-50/70 border-t border-emerald-100 py-1.5 px-4 text-xs">
+            <div class="max-w-7xl mx-auto flex items-center justify-between text-gray-500">
+                <div id="breadcrumb-trail" class="flex items-center gap-2">
+                    <span class="hover:text-egreen-700 cursor-pointer" onclick="navigateTo('home')">Home</span>
+                    <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                    <span id="breadcrumb-current" class="font-semibold text-egreen-700">Overview</span>
+                </div>
+                <div class="hidden sm:block text-[11px] text-emerald-800">
+                    <i class="fa-solid fa-leaf text-emerald-500 mr-1"></i> 100% Verified Local Organic Farmers
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT WRAPPER -->
+    <main class="flex-grow">
+
+        <!-- SECTION: HOME / HERO -->
+        <section id="section-home" class="section-block relative py-12 lg:py-20 bg-gradient-to-b from-emerald-50/50 via-white to-gray-50 overflow-hidden">
+            <!-- Decorative Elements -->
+            <div class="absolute -top-24 -right-24 w-96 h-96 bg-emerald-200/40 rounded-full blur-3xl pointer-events-none"></div>
+            <div class="absolute bottom-0 -left-20 w-80 h-80 bg-green-300/20 rounded-full blur-3xl pointer-events-none"></div>
+
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+                <div class="grid lg:grid-cols-12 gap-12 items-center">
+                    
+                    <!-- Left Hero Text -->
+                    <div class="lg:col-span-7 space-y-6 text-center lg:text-left">
+                        <span class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-100 text-egreen-800 text-xs font-bold tracking-wide">
+                            <i class="fa-solid fa-seedling text-emerald-600"></i> Sustainable Farm-to-Table Platform
+                        </span>
+                        <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-gray-900 tracking-tight leading-tight">
+                            Fresh Local Produce at Your <span class="text-transparent bg-clip-text bg-gradient-to-r from-egreen-700 to-emerald-500">Fingertips 🌾</span>
+                        </h1>
+                        <p class="text-base sm:text-lg text-gray-600 max-w-2xl mx-auto lg:mx-0 font-normal">
+                            Discover organic farmer markets near you, explore seasonal harvest guides, and directly connect with local growers in your community.
+                        </p>
+
+                        <!-- QUICK FIND SEARCH CONTAINER -->
+                        <div class="glass-panel p-4 sm:p-6 rounded-3xl shadow-xl shadow-emerald-900/5 border border-emerald-100 mt-8">
+                            <h2 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 text-left">
+                                <i class="fa-solid fa-magnifying-glass text-emerald-600 mr-1"></i> Quick Market Directory Search
+                            </h2>
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                <!-- Area Filter Input -->
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-600 mb-1 text-left">Neighborhood / Area</label>
+                                    <select id="quick-area" class="w-full bg-white border border-gray-200 rounded-xl px-3 py-2.5 text-xs font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                                        <option value="ALL">All Neighborhoods</option>
+                                        <option value="Downtown">Downtown Sector</option>
+                                        <option value="Green Valley">Green Valley</option>
+                                        <option value="North Park">North Park District</option>
+                                        <option value="Eastside">Eastside Community</option>
+                                    </select>
+                                </div>
+
+                                <!-- Operating Day Filter -->
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-600 mb-1 text-left">Operating Day</label>
+                                    <select id="quick-day" class="w-full bg-white border border-gray-200 rounded-xl px-3 py-2.5 text-xs font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                                        <option value="ALL">Any Operating Day</option>
+                                        <option value="TODAY">Open Today</option>
+                                        <option value="1">Monday</option>
+                                        <option value="3">Wednesday</option>
+                                        <option value="5">Friday</option>
+                                        <option value="6">Saturday</option>
+                                        <option value="0">Sunday</option>
+                                    </select>
+                                </div>
+
+                                <!-- Produce Filter -->
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-600 mb-1 text-left">Produce Category</label>
+                                    <select id="quick-produce" class="w-full bg-white border border-gray-200 rounded-xl px-3 py-2.5 text-xs font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                                        <option value="ALL">All Categories</option>
+                                        <option value="Organic Fruits">Organic Fruits</option>
+                                        <option value="Fresh Vegetables">Fresh Vegetables</option>
+                                        <option value="Herbs">Herbs & Spices</option>
+                                        <option value="Dairy & Eggs">Artisanal Dairy</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <button onclick="executeQuickSearch()" class="w-full mt-4 bg-egreen-600 hover:bg-egreen-700 text-white font-bold text-sm py-3 px-6 rounded-xl shadow-md transition-all flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-sliders"></i> Filter & Search Markets
+                            </button>
+                        </div>
+
+                        <!-- Stats Banner -->
+                        <div class="grid grid-cols-3 gap-4 pt-4 border-t border-gray-100">
+                            <div>
+                                <span class="text-2xl font-black text-egreen-700">18+</span>
+                                <p class="text-xs text-gray-500 font-medium">Local Markets</p>
+                            </div>
+                            <div>
+                                <span class="text-2xl font-black text-egreen-700">120+</span>
+                                <p class="text-xs text-gray-500 font-medium">Certified Farmers</p>
+                            </div>
+                            <div>
+                                <span class="text-2xl font-black text-egreen-700">100%</span>
+                                <p class="text-xs text-gray-500 font-medium">Fresh Organic</p>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Right Hero Visual Cards -->
+                    <div class="lg:col-span-5 relative">
+                        <div class="relative mx-auto max-w-md lg:max-w-none">
+                            <div class="rounded-3xl overflow-hidden shadow-2xl border-4 border-white">
+                                <img src="https://images.unsplash.com/photo-1488459716781-31db52582fe9?auto=format&fit=crop&w=800&q=80" alt="Fresh Farmer Market Basket" class="w-full h-96 object-cover hover:scale-105 transition-transform duration-500" />
+                            </div>
+                            
+                            <!-- Floating Badge Card -->
+                            <div class="absolute -bottom-6 -left-6 bg-white p-4 rounded-2xl shadow-xl border border-emerald-100 flex items-center gap-3">
+                                <div class="w-12 h-12 rounded-xl bg-emerald-100 text-egreen-700 flex items-center justify-center text-xl font-bold">
+                                    <i class="fa-solid fa-clock"></i>
+                                </div>
+                                <div>
+                                    <h4 class="text-xs font-bold text-gray-900">Real-Time Status</h4>
+                                    <p class="text-[11px] text-emerald-600 font-semibold" id="hero-status-ticker">Checking open markets...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION: MARKET DIRECTORY -->
+        <section id="section-markets" class="section-block hidden py-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
+                <div>
+                    <span class="text-xs font-bold uppercase tracking-widest text-emerald-600">Farmer Directory</span>
+                    <h2 class="text-3xl font-extrabold text-gray-900">Explore Local Markets</h2>
+                    <p class="text-sm text-gray-500 mt-1">Browse active local bazaars, operating hours, and produce availability.</p>
+                </div>
+
+                <!-- Sorting Controls -->
+                <div class="flex items-center gap-3 bg-white p-2 rounded-2xl border border-gray-200 shadow-sm">
+                    <label class="text-xs font-bold text-gray-500 pl-2">Sort By:</label>
+                    <select id="market-sort" onchange="renderMarkets()" class="bg-gray-50 text-xs font-semibold text-gray-700 py-1.5 px-3 rounded-xl border-none focus:outline-none">
+                        <option value="name">Name (A-Z)</option>
+                        <option value="distance">Proximity (Nearest)</option>
+                        <option value="open">Open Right Now</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Active Filters Indicator Bar -->
+            <div class="bg-emerald-50 rounded-2xl p-4 mb-6 flex flex-wrap items-center justify-between gap-3 text-xs border border-emerald-100">
+                <div class="flex items-center gap-2">
+                    <span class="font-bold text-egreen-800"><i class="fa-solid fa-filter mr-1"></i> Active Filters:</span>
+                    <span id="active-filter-tags" class="flex flex-wrap gap-2">
+                        <span class="bg-white px-2.5 py-1 rounded-lg border border-emerald-200 text-emerald-800 font-medium">All Markets</span>
+                    </span>
+                </div>
+                <button onclick="resetMarketFilters()" class="text-emerald-700 font-bold hover:underline">Reset Filters</button>
+            </div>
+
+            <!-- Markets Grid -->
+            <div id="markets-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Dynamic Market Cards injected via JavaScript -->
+            </div>
+        </section>
+
+        <!-- SECTION: PRODUCE GUIDE -->
+        <section id="section-produce" class="section-block hidden py-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-2xl mx-auto mb-10">
+                <span class="text-xs font-bold uppercase tracking-widest text-emerald-600">Seasonal Catalog</span>
+                <h2 class="text-3xl font-extrabold text-gray-900">Fresh Produce Guide</h2>
+                <p class="text-sm text-gray-500 mt-1">Learn about locally harvested seasonal fruits, vegetables, and artisanal dairy items.</p>
+
+                <!-- Category Tabs -->
+                <div class="flex flex-wrap justify-center gap-2 mt-6">
+                    <button onclick="filterProduceCategory('ALL')" class="produce-cat-btn active bg-egreen-600 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-sm">All Produce</button>
+                    <button onclick="filterProduceCategory('Fruits')" class="produce-cat-btn bg-white text-gray-600 hover:bg-emerald-50 px-4 py-2 rounded-xl text-xs font-bold transition-all border border-gray-200">Fruits 🍎</button>
+                    <button onclick="filterProduceCategory('Vegetables')" class="produce-cat-btn bg-white text-gray-600 hover:bg-emerald-50 px-4 py-2 rounded-xl text-xs font-bold transition-all border border-gray-200">Vegetables 🥕</button>
+                    <button onclick="filterProduceCategory('Herbs')" class="produce-cat-btn bg-white text-gray-600 hover:bg-emerald-50 px-4 py-2 rounded-xl text-xs font-bold transition-all border border-gray-200">Herbs 🌿</button>
+                    <button onclick="filterProduceCategory('Dairy')" class="produce-cat-btn bg-white text-gray-600 hover:bg-emerald-50 px-4 py-2 rounded-xl text-xs font-bold transition-all border border-gray-200">Dairy & Eggs 🧀</button>
+                </div>
+            </div>
+
+            <!-- Produce Items Grid -->
+            <div id="produce-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Dynamic Produce Cards injected via JS -->
+            </div>
+        </section>
+
+        <!-- SECTION: BOOKMARKS & PERSONAL NOTES -->
+        <section id="section-bookmarks" class="section-block hidden py-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4 border-b border-gray-200 pb-5">
+                <div>
+                    <span class="text-xs font-bold uppercase tracking-widest text-emerald-600">Saved Items</span>
+                    <h2 class="text-3xl font-extrabold text-gray-900">Your Favorite Markets & Notes</h2>
+                    <p class="text-sm text-gray-500">Manage saved places, write custom shopping notes, and export your list.</p>
+                </div>
+                
+                <div class="flex items-center gap-3">
+                    <button onclick="exportBookmarksTxt()" class="bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-md flex items-center gap-2 transition-all">
+                        <i class="fa-solid fa-download"></i> Export Summary (.txt)
+                    </button>
+                    <button onclick="openShareModal()" class="bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-md flex items-center gap-2 transition-all">
+                        <i class="fa-solid fa-share-nodes"></i> Share List
+                    </button>
+                </div>
+            </div>
+
+            <!-- Bookmarks Grid -->
+            <div id="bookmarks-container" class="space-y-6">
+                <!-- Dynamically rendered favorited items with notes textarea -->
+            </div>
+        </section>
+
+    
+
+                <!-- Member 2: Azwin -->
+                <div class="bg-white p-6 rounded-3xl border border-gray-200 shadow-lg shadow-gray-100 hover:border-emerald-300 transition-all text-center">
+                    <div class="w-20 h-20 mx-auto rounded-full bg-gradient-to-tr from-emerald-700 to-green-500 text-white text-2xl font-bold flex items-center justify-center mb-4 shadow-md">
+                        AW
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-900">Azwin Earnest</h3>
+                    <p class="text-xs font-bold text-emerald-600 mb-2"></p>
+                    <p class="text-xs text-gray-500 leading-relaxed mb-4">
+                        This website Developed with HTML, CSS, JavaScript, JSON.                   </p>
+                    <div class="flex flex-wrap justify-center gap-1">
+                        <span class="bg-emerald-50 text-emerald-800 text-[10px] font-semibold px-2 py-0.5 rounded-md">JSON Datasets</span>
+                        <span class="bg-emerald-50 text-emerald-800 text-[10px] font-semibold px-2 py-0.5 rounded-md">Search Logic</span>
+                        <span class="bg-emerald-50 text-emerald-800 text-[10px] font-semibold px-2 py-0.5 rounded-md">Realtime Engine</span>
+                    </div>
+                </div>
+
+            <!-- Project Vision Banner -->
+            <div class="mt-12 bg-gradient-to-r from-egreen-800 to-egreen-600 text-white rounded-3xl p-8 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
+                <div>
+                    <h3 class="text-xl font-bold mb-2">Clean, Sustainable Farm-to-Table Vision</h3>
+                    <p class="text-xs text-emerald-100 max-w-xl leading-relaxed">
+                        FreshFind encourages localized produce consumption, reducing food transportation emissions while empowering independent agricultural workers.
+                    </p>
+                </div>
+                <button onclick="navigateTo('markets')" class="bg-white text-egreen-800 font-extrabold text-xs px-6 py-3 rounded-xl hover:bg-emerald-50 transition-all shrink-0">
+                    Explore Directory Now
+                </button>
+            </div>
+        </section>
+
+        <!-- SECTION: CONTACT US -->
+        <section id="section-contact" class="section-block hidden py-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid lg:grid-cols-12 gap-8 items-start">
+                
+                <!-- Contact Info Card -->
+                <div class="lg:col-span-5 bg-white p-8 rounded-3xl border border-gray-200 shadow-lg space-y-6">
+                    <div>
+                        <span class="text-xs font-bold uppercase tracking-widest text-emerald-600">Get In Touch</span>
+                        <h2 class="text-2xl font-extrabold text-gray-900 mt-1">We’d Love to Hear From You</h2>
+                        <p class="text-xs text-gray-500 mt-1">Have a market to list or a suggestion? Send us a message.</p>
+                    </div>
+
+                    <div class="space-y-4 text-xs">
+                        <div class="flex items-start gap-3">
+                            <div class="w-8 h-8 rounded-lg bg-emerald-100 text-egreen-700 flex items-center justify-center font-bold">
+                                <i class="fa-solid fa-location-dot"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-gray-900">Main Office Address</h4>
+                                <p class="text-gray-500">FreshFind HQ, Green Valley Tech Center, Suite 402</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start gap-3">
+                            <div class="w-8 h-8 rounded-lg bg-emerald-100 text-egreen-700 flex items-center justify-center font-bold">
+                                <i class="fa-solid fa-envelope"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-gray-900">Email Support</h4>
+                                <p class="text-gray-500">support@freshfind-egreen.org</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start gap-3">
+                            <div class="w-8 h-8 rounded-lg bg-emerald-100 text-egreen-700 flex items-center justify-center font-bold">
+                                <i class="fa-solid fa-phone"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-gray-900">Phone Directory</h4>
+                                <p class="text-gray-500">+1 (800) 458-EGREEN</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Geolocation API Action Box -->
+                    <div class="bg-emerald-50 p-4 rounded-2xl border border-emerald-200 text-xs space-y-2">
+                        <h4 class="font-bold text-egreen-800 flex items-center gap-2">
+                            <i class="fa-solid fa-crosshairs text-emerald-600"></i> Location Assistant
+                        </h4>
+                        <p class="text-gray-600 text-[11px]">Use browser geolocation to find the nearest organic market to your current position.</p>
+                        <button onclick="findNearbyMarketGeo()" class="w-full bg-egreen-600 hover:bg-egreen-700 text-white font-bold py-2 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-location-arrow"></i> Detect My Location
+                        </button>
+                        <p id="geo-status" class="text-[10px] text-emerald-700 font-semibold text-center mt-1"></p>
+                    </div>
+                </div>
+
+                <!-- Contact Form -->
+                <div class="lg:col-span-7 bg-white p-8 rounded-3xl border border-gray-200 shadow-lg">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4">Send Us a Direct Message</h3>
+                    <form onsubmit="handleContactSubmit(event)" class="space-y-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-600 mb-1">Your Full Name</label>
+                                <input type="text" required placeholder="John Doe" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3.5 py-2.5 text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none" />
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-600 mb-1">Your Email</label>
+                                <input type="email" required placeholder="john@example.com" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3.5 py-2.5 text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none" />
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1">Subject</label>
+                            <input type="text" required placeholder="Market recommendation or inquiry" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3.5 py-2.5 text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none" />
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1">Message</label>
+                            <textarea rows="4" required placeholder="Write your feedback or questions here..." class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3.5 py-2.5 text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none"></textarea>
+                        </div>
+
+                        <button type="submit" class="bg-egreen-600 hover:bg-egreen-700 text-white font-bold text-xs py-3 px-8 rounded-xl shadow-md transition-all">
+                            Submit Message
+                        </button>
+                    </form>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-gray-900 text-white pt-12 pb-8 mt-16 border-t border-gray-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 pb-8 border-b border-gray-800 text-xs">
+                
+                <div class="space-y-3">
+                    <div class="flex items-center gap-2">
+                        <div class="w-8 h-8 rounded-xl bg-egreen-600 flex items-center justify-center text-white font-bold">🌿</div>
+                        <span class="text-lg font-bold">FreshFind</span>
+                    </div>
+                    <p class="text-gray-400 leading-relaxed">
+                        eGreen Basket Single Page Application (SPA). Bringing community markets directly to your mobile screen.
+                    </p>
+                </div>
+
+                <div>
+                    <h4 class="font-bold text-sm text-emerald-400 mb-3">Quick Links</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#" onclick="navigateTo('home'); return false;" class="hover:text-white">Home Directory</a></li>
+                        <li><a href="#" onclick="navigateTo('markets'); return false;" class="hover:text-white">Farmer Bazaars</a></li>
+                        <li><a href="#" onclick="navigateTo('produce'); return false;" class="hover:text-white">Produce Seasonal Guide</a></li>
+                        <li><a href="#" onclick="navigateTo('about'); return false;" class="hover:text-white">Development Team</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="font-bold text-sm text-emerald-400 mb-3">Newsletter Sync</h4>
+                    <p class="text-gray-400 mb-2">Subscribe for weekly harvest updates in your area.</p>
+                    <div class="flex">
+                        <input type="email" placeholder="Email address" class="bg-gray-800 text-white px-3 py-2 rounded-l-xl text-xs w-full focus:outline-none" />
+                        <button onclick="showToast('Subscribed to harvest updates!', 'success')" class="bg-egreen-600 hover:bg-egreen-700 px-3 py-2 rounded-r-xl font-bold">Join</button>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="pt-6 text-center text-gray-500 text-[11px] flex flex-col sm:flex-row justify-between items-center gap-2">
+                <p>&copy; 2026 FreshFind (eGreen Basket). All rights reserved.</p>
+                <p>Designed for Sustainable Local Agriculture</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- MODAL 1: MARKET DETAIL MODAL -->
+    <div id="market-modal" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
+            <!-- Modal Header -->
+            <div class="relative bg-egreen-700 text-white p-6 flex justify-between items-start">
+                <div>
+                    <span id="modal-market-area" class="text-[10px] uppercase font-extrabold bg-white/20 text-emerald-100 px-2.5 py-1 rounded-md">Area</span>
+                    <h3 id="modal-market-title" class="text-2xl font-black mt-2">Market Name</h3>
+                    <p id="modal-market-address" class="text-xs text-emerald-100 mt-1"><i class="fa-solid fa-location-dot"></i> Address</p>
+                </div>
+                <button onclick="closeMarketModal()" class="w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center text-white">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Modal Content Body -->
+            <div class="p-6 overflow-y-auto space-y-6 text-xs text-gray-600">
+                
+                <div>
+                    <h4 class="font-bold text-gray-900 text-sm mb-1">About This Market</h4>
+                    <p id="modal-market-desc" class="leading-relaxed">Market description...</p>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-gray-50 p-3 rounded-2xl border border-gray-100">
+                        <span class="font-bold text-gray-900 block mb-1"><i class="fa-solid fa-clock text-emerald-600 mr-1"></i> Operating Schedule</span>
+                        <p id="modal-market-hours">8:00 AM - 5:00 PM</p>
+                        <p id="modal-market-days" class="text-[11px] text-emerald-700 font-semibold mt-0.5">Mon, Wed, Fri</p>
+                    </div>
+
+                    <div class="bg-gray-50 p-3 rounded-2xl border border-gray-100">
+                        <span class="font-bold text-gray-900 block mb-1"><i class="fa-solid fa-star text-amber-500 mr-1"></i> Customer Rating</span>
+                        <p id="modal-market-rating">4.8 / 5.0 (Verified)</p>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 class="font-bold text-gray-900 text-sm mb-2">Available Organic Produce Types</h4>
+                    <div id="modal-market-tags" class="flex flex-wrap gap-2"></div>
+                </div>
+
+                <!-- Simulated Interactive Google Map Box -->
+                <div>
+                    <h4 class="font-bold text-gray-900 text-sm mb-2">Map Preview Location</h4>
+                    <div class="w-full h-44 bg-emerald-900/10 rounded-2xl relative overflow-hidden flex items-center justify-center border border-emerald-200">
+                        <div class="absolute inset-0 opacity-30 bg-[radial-gradient(#2e7d32_1px,transparent_1px)] [background-size:16px_16px]"></div>
+                        <div class="text-center z-10 p-4">
+                            <i class="fa-solid fa-location-dot text-3xl text-egreen-600 animate-bounce mb-1"></i>
+                            <p class="font-bold text-gray-800 text-xs" id="modal-map-label">Interactive Map Coordinates Loaded</p>
+                            <span class="text-[10px] text-gray-500">Live GPS Pin Point Active</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="bg-gray-50 p-4 border-t border-gray-100 flex justify-between items-center">
+                <button id="modal-bookmark-btn" class="bg-amber-500 hover:bg-amber-600 text-white font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-2">
+                    <i class="fa-regular fa-star"></i> Bookmark Market
+                </button>
+                <button onclick="closeMarketModal()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold px-4 py-2 rounded-xl text-xs">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: DUMMY AUTH MODAL -->
+    <div id="auth-modal" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl p-6 relative">
+            <button onclick="closeAuthModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-lg">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div class="text-center mb-6">
+                <div class="w-12 h-12 rounded-2xl bg-emerald-100 text-egreen-700 flex items-center justify-center mx-auto text-xl font-bold mb-2">🌿</div>
+                <h3 id="auth-modal-title" class="text-xl font-bold text-gray-900">Log In to FreshFind</h3>
+                <p class="text-xs text-gray-500 mt-1">Access personalized market bookmarks and notes.</p>
+            </div>
+
+            <form onsubmit="handleAuthSubmit(event)" class="space-y-4 text-xs">
+                <div>
+                    <label class="block font-semibold text-gray-700 mb-1">Email Address</label>
+                    <input type="email" required placeholder="user@example.com" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+                </div>
+                <div>
+                    <label class="block font-semibold text-gray-700 mb-1">Password</label>
+                    <input type="password" required placeholder="••••••••" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+                </div>
+                <button type="submit" class="w-full bg-egreen-600 hover:bg-egreen-700 text-white font-bold py-3 rounded-xl shadow-md transition-all text-xs">
+                    Continue
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 3: SOCIAL SHARE MODAL -->
+    <div id="share-modal" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-3xl shadow-2xl p-6 text-center relative">
+            <button onclick="closeShareModal()" class="absolute top-4 right-4 text-gray-400 text-lg">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <h3 class="text-lg font-bold text-gray-900 mb-2">Share Your Bookmarks</h3>
+            <p class="text-xs text-gray-500 mb-4">Copy shareable link or share to social media platforms.</p>
+
+            <div class="flex justify-center gap-4 text-2xl mb-6">
+                <button onclick="simulatedShare('WhatsApp')" class="w-10 h-10 rounded-full bg-green-100 text-green-600 flex items-center justify-center hover:scale-110 transition-transform"><i class="fa-brands fa-whatsapp"></i></button>
+                <button onclick="simulatedShare('Twitter')" class="w-10 h-10 rounded-full bg-sky-100 text-sky-500 flex items-center justify-center hover:scale-110 transition-transform"><i class="fa-brands fa-twitter"></i></button>
+                <button onclick="simulatedShare('Facebook')" class="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center hover:scale-110 transition-transform"><i class="fa-brands fa-facebook-f"></i></button>
+            </div>
+
+            <button onclick="copyShareLink()" class="w-full bg-emerald-50 text-egreen-800 border border-emerald-200 font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-2">
+                <i class="fa-solid fa-copy"></i> Copy Direct Link
+            </button>
+        </div>
+    </div>
+
+    <!-- PRE-SCRIPTED RULE-BASED AI CHATBOT WIDGET -->
+    <div class="fixed bottom-6 right-6 z-50">
+        <!-- Floating Toggle Button -->
+        <button id="chatbot-toggle-btn" onclick="toggleChatbot()" class="w-14 h-14 bg-egreen-600 hover:bg-egreen-700 text-white rounded-full shadow-2xl flex items-center justify-center text-2xl pulse-glow transition-all">
+            <i class="fa-solid fa-robot"></i>
+        </button>
+
+        <!-- Chat Window Box -->
+        <div id="chatbot-window" class="hidden absolute bottom-16 right-0 w-[90vw] sm:w-96 bg-white rounded-3xl shadow-2xl border border-emerald-100 overflow-hidden flex flex-col h-[480px]">
+            
+            <!-- Chat Header -->
+            <div class="bg-egreen-700 text-white p-4 flex items-center justify-between">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white font-bold text-sm">
+                        
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-sm">FreshBot AI Assistant</h4>
+                        <p class="text-[10px] text-emerald-200">Rule-Based Helper Active</p>
+                    </div>
+                </div>
+                <button onclick="toggleChatbot()" class="text-white hover:text-emerald-200 text-lg">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Messages Log Container -->
+            <div id="chat-messages" class="flex-grow p-4 overflow-y-auto space-y-3 text-xs">
+                <!-- Initial Welcome Message -->
+                <div class="flex gap-2">
+                    <div class="w-6 h-6 rounded-full bg-emerald-100 text-egreen-700 flex items-center justify-center text-[10px] shrink-0 font-bold">🤖</div>
+                    <div class="bg-emerald-50 text-emerald-900 p-3 rounded-2xl rounded-tl-none border border-emerald-100 max-w-[80%]">
+                        Hello! 🌿 I am FreshBot. Ask me about open markets, seasonal produce, organic certification, or project team details!
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Reply Chips -->
+            <div class="p-2 border-t border-gray-100 bg-gray-50 flex gap-1.5 overflow-x-auto text-[10px] no-scrollbar">
+                <button onclick="sendQuickReply('Which markets are open today?')" class="bg-white border border-emerald-200 text-emerald-800 font-semibold px-2.5 py-1 rounded-full whitespace-nowrap hover:bg-emerald-50">Markets Open Today?</button>
+                <button onclick="sendQuickReply('What produce is in season?')" class="bg-white border border-emerald-200 text-emerald-800 font-semibold px-2.5 py-1 rounded-full whitespace-nowrap hover:bg-emerald-50">In-Season Produce?</button>
+                <button onclick="sendQuickReply('Who created FreshFind?')" class="bg-white border border-emerald-200 text-emerald-800 font-semibold px-2.5 py-1 rounded-full whitespace-nowrap hover:bg-emerald-50">Project Team?</button>
+            </div>
+
+            <!-- Chat Input Form -->
+            <form onsubmit="handleChatSubmit(event)" class="p-3 border-t border-gray-100 flex gap-2 bg-white">
+                <input id="chat-input" type="text" placeholder="Ask a question..." class="flex-grow bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+                <button type="submit" class="bg-egreen-600 hover:bg-egreen-700 text-white font-bold px-3.5 py-2 rounded-xl text-xs">
+                    <i class="fa-solid fa-paper-plane"></i>
+                </button>
+            </form>
+
+        </div>
+    </div>
+
+    <script>
+        
+        // 1. MARKETS DATASET
+        const MARKETS_DATA = [
+            {
+                id: 'm1',
+                name: 'Green Valley Farmers Market',
+                area: 'Green Valley',
+                address: '450 Green Valley Rd, Sector 4',
+                daysOpen: [1, 3, 5, 6], // 0=Sun, 1=Mon, 2=Tue, 3=Wed, 4=Thu, 5=Fri, 6=Sat
+                daysText: 'Mon, Wed, Fri, Sat',
+                openHour: 8,  // 8 AM
+                closeHour: 17, // 5 PM
+                hoursText: '08:00 AM - 05:00 PM',
+                produceTypes: ['Organic Fruits', 'Fresh Vegetables', 'Herbs'],
+                rating: 4.8,
+                distance: 2.4, // km
+                image: 'https://images.unsplash.com/photo-1488459716781-31db52582fe9?auto=format&fit=crop&w=600&q=80',
+                desc: 'Community-run market providing organic fruits, seasonal vegetables, and locally harvested honey directly from local farm owners.'
+            },
+            {
+                id: 'm2',
+                name: 'Downtown Organic Bazaar',
+                area: 'Downtown',
+                address: '122 Main Civic Center Plaza',
+                daysOpen: [0, 2, 4, 6],
+                daysText: 'Sun, Tue, Thu, Sat',
+                openHour: 9,
+                closeHour: 19,
+                hoursText: '09:00 AM - 07:00 PM',
+                produceTypes: ['Organic Fruits', 'Dairy & Eggs', 'Herbs'],
+                rating: 4.6,
+                distance: 1.1,
+                image: 'https://images.unsplash.com/photo-1533900298318-6b8da08a523e?auto=format&fit=crop&w=600&q=80',
+                desc: 'Bustling urban market with over 30 stalls featuring artisanal cheeses, farm-fresh eggs, and cold-pressed juices.'
+            },
+            {
+                id: 'm3',
+                name: 'North Park Harvest Square',
+                area: 'North Park',
+                address: '89 North Park Boulevard',
+                daysOpen: [5, 6, 0],
+                daysText: 'Fri, Sat, Sun',
+                openHour: 7,
+                closeHour: 14,
+                hoursText: '07:00 AM - 02:00 PM',
+                produceTypes: ['Fresh Vegetables', 'Herbs', 'Dairy & Eggs'],
+                rating: 4.9,
+                distance: 3.8,
+                image: 'https://images.unsplash.com/photo-1506484381205-f7945653044d?auto=format&fit=crop&w=600&q=80',
+                desc: 'Specialized weekend farmers market known for heirloom root vegetables, organic microgreens, and freshly baked bread.'
+            },
+            {
+                id: 'm4',
+                name: 'Eastside Community Fair',
+                area: 'Eastside',
+                address: '304 East Meadow Lane',
+                daysOpen: [1, 2, 3, 4, 5, 6, 0], // Open everyday
+                daysText: 'Daily (Mon - Sun)',
+                openHour: 8,
+                closeHour: 20,
+                hoursText: '08:00 AM - 08:00 PM',
+                produceTypes: ['Organic Fruits', 'Fresh Vegetables'],
+                rating: 4.5,
+                distance: 5.2,
+                image: 'https://images.unsplash.com/photo-1578916171728-46686eac8d58?auto=format&fit=crop&w=600&q=80',
+                desc: 'Daily cooperative bazaar serving affordable hydroponic greens, fresh citrus, and zero-pesticide produce.'
+            }
+        ];
+
+        // 2. PRODUCE GUIDE DATASET
+        const PRODUCE_DATA = [
+            {
+                id: 'p1',
+                name: 'Heirloom Vine Tomatoes',
+                category: 'Vegetables',
+                season: 'Summer / Autumn',
+                price: '$3.50 / lb',
+                desc: 'Rich, juicy vine-ripened heirloom tomatoes harvested without synthetic fertilizers.',
+                image: 'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?auto=format&fit=crop&w=600&q=80'
+            },
+            {
+                id: 'p2',
+                name: 'Organic Honeycrisp Apples',
+                category: 'Fruits',
+                season: 'Autumn / Winter',
+                price: '$2.80 / lb',
+                desc: 'Crisp, sweet orchard apples harvested directly from regional mountain growers.',
+                image: 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?auto=format&fit=crop&w=600&q=80'
+            },
+            {
+                id: 'p3',
+                name: 'Fresh Sweet Basil Leaves',
+                category: 'Herbs',
+                season: 'Spring / Summer',
+                price: '$1.99 / bunch',
+                desc: 'Fragrant, green basil leaves grown in local greenhouse hydroponic units.',
+                image: 'https://images.unsplash.com/photo-1608683232869-93d40ef148f3?auto=format&fit=crop&w=600&q=80'
+            },
+            {
+                id: 'p4',
+                name: 'Artisanal Goat Milk Cheese',
+                category: 'Dairy',
+                season: 'All Year',
+                price: '$6.50 / block',
+                desc: 'Handcrafted creamy goat cheese from pasture-raised organic dairy goats.',
+                image: 'https://images.unsplash.com/photo-1486297678162-eb2a19b0a32d?auto=format&fit=crop&w=600&q=80'
+            }
+        ];
+
+        // 3. RULE-BASED AI CHATBOT KNOWLEDGE BASE
+        const FAQ_RULES = [
+            {
+                keywords: ['hi', 'hello', 'hey', 'start'],
+                response: 'Hello! 🌿 Welcome to FreshFind. I can help you locate markets, check seasonal fruits, or guide you through bookmarks.'
+            },
+            {
+                keywords: ['open', 'today', 'hours', 'time'],
+                response: 'You can check real-time market open status directly in the "Market Directory" section. Look for the green "OPEN NOW" badges!'
+            },
+            {
+                keywords: ['season', 'summer', 'winter', 'fruit', 'vegetable'],
+                response: 'Current seasonal highlights include Heirloom Tomatoes, Honeycrisp Apples, and Fresh Basil! Visit the "Produce Guide" tab for details.'
+            },
+            {
+                keywords: ['team', 'creator', 'who', 'aizaz', 'azwin', 'ali', 'huzaifa'],
+                response: 'FreshFind was built by a 4-member student team: Aizaz (UI/UX), Azwin (Data Engine), Ali Akbar (Chatbot & Bookmarks), and Huzaifa (QA & Docs).'
+            },
+            {
+                keywords: ['bookmark', 'favorite', 'save', 'notes'],
+                response: 'Click the star icon ⭐️ on any market card to save it. You can add custom shopping notes in your Bookmarks section and export as a .txt file!'
+            }
+        ];
+
+        let activeSection = 'home';
+        let bookmarkedIds = JSON.parse(localStorage.getItem('freshfind_bookmarks') || '[]');
+        let personalNotes = JSON.parse(localStorage.getItem('freshfind_notes') || '{}');
+
+        // Navigation Switcher
+        function navigateTo(sectionId) {
+            activeSection = sectionId;
+            document.querySelectorAll('.section-block').forEach(sec => sec.classList.add('hidden'));
+            
+            const target = document.getElementById(`section-${sectionId}`);
+            if(target) target.classList.remove('hidden');
+
+            // Update Nav Active State
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('text-egreen-700', 'bg-emerald-50');
+                btn.classList.add('text-gray-600');
+            });
+            const activeNav = document.getElementById(`nav-${sectionId}`);
+            if(activeNav) {
+                activeNav.classList.remove('text-gray-600');
+                activeNav.classList.add('text-egreen-700', 'bg-emerald-50');
+            }
+
+            // Update Breadcrumb Trail
+            const currentLabel = sectionId.charAt(0).toUpperCase() + sectionId.slice(1);
+            document.getElementById('breadcrumb-current').textContent = currentLabel === 'Home' ? 'Overview' : currentLabel;
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            // Trigger section-specific re-renders
+            if(sectionId === 'markets') renderMarkets();
+            if(sectionId === 'produce') renderProduce();
+            if(sectionId === 'bookmarks') renderBookmarks();
+        }
+
+        // Dynamic "OPEN NOW" Calculator
+        function isMarketOpenNow(market) {
+            const now = new Date();
+            const currentDay = now.getDay(); // 0=Sun, 1=Mon, ...
+            const currentHour = now.getHours();
+
+            const isOpenDay = market.daysOpen.includes(currentDay);
+            const isOpenHour = currentHour >= market.openHour && currentHour < market.closeHour;
+
+            return isOpenDay && isOpenHour;
+        }
+
+        // Render Market Directory
+        function renderMarkets(customFilterList = null) {
+            const grid = document.getElementById('markets-grid');
+            if(!grid) return;
+            grid.innerHTML = '';
+
+            let listToRender = customFilterList || [...MARKETS_DATA];
+
+            // Apply Sorting
+            const sortVal = document.getElementById('market-sort')?.value || 'name';
+            if(sortVal === 'name') {
+                listToRender.sort((a,b) => a.name.localeCompare(b.name));
+            } else if(sortVal === 'distance') {
+                listToRender.sort((a,b) => a.distance - b.distance);
+            } else if(sortVal === 'open') {
+                listToRender.sort((a,b) => isMarketOpenNow(b) - isMarketOpenNow(a));
+            }
+
+            listToRender.forEach(m => {
+                const isOpen = isMarketOpenNow(m);
+                const isBookmarked = bookmarkedIds.includes(m.id);
+
+                const cardHtml = `
+                    <div class="bg-white rounded-3xl border border-gray-200 shadow-md hover:shadow-xl transition-all overflow-hidden flex flex-col justify-between group">
+                        <div>
+                            <!-- Card Image & Badge Overlay -->
+                            <div class="relative h-48 overflow-hidden">
+                                <img src="${m.image}" alt="${m.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                                <div class="absolute top-3 left-3 flex gap-2">
+                                    <span class="px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wide text-white ${isOpen ? 'bg-emerald-600 shadow-md' : 'bg-gray-500'}">
+                                        ${isOpen ? '🟢 Open Now' : '🔴 Closed'}
+                                    </span>
+                                </div>
+                                <button onclick="toggleBookmark('${m.id}')" class="absolute top-3 right-3 w-9 h-9 rounded-full bg-white/90 text-amber-500 flex items-center justify-center shadow-md hover:scale-110 transition-transform">
+                                    <i class="${isBookmarked ? 'fa-solid' : 'fa-regular'} fa-star"></i>
+                                </button>
+                            </div>
+
+                            <!-- Card Info -->
+                            <div class="p-5 space-y-2 text-xs">
+                                <div class="flex justify-between items-center text-gray-400 font-semibold">
+                                    <span><i class="fa-solid fa-location-dot text-emerald-600 mr-1"></i> ${m.area}</span>
+                                    <span><i class="fa-solid fa-route text-gray-400 mr-1"></i> ${m.distance} km</span>
+                                </div>
+                                <h3 class="text-lg font-bold text-gray-900 group-hover:text-egreen-700 transition-colors">${m.name}</h3>
+                                <p class="text-gray-500 line-clamp-2">${m.desc}</p>
+                                
+                                <div class="pt-2 border-t border-gray-100 flex flex-wrap gap-1">
+                                    ${m.produceTypes.map(t => `<span class="bg-emerald-50 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-md">${t}</span>`).join('')}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card Action Footer -->
+                        <div class="p-5 pt-0">
+                            <button onclick="openMarketModal('${m.id}')" class="w-full bg-emerald-50 hover:bg-egreen-600 hover:text-white text-egreen-800 font-bold py-2.5 rounded-xl transition-all text-xs flex items-center justify-center gap-2">
+                                View Details & Schedule <i class="fa-solid fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                grid.insertAdjacentHTML('beforeend', cardHtml);
+            });
+        }
+
+        function executeQuickSearch() {
+            const area = document.getElementById('quick-area').value;
+            const day = document.getElementById('quick-day').value;
+            const produce = document.getElementById('quick-produce').value;
+
+            let filtered = MARKETS_DATA.filter(m => {
+                let matchArea = (area === 'ALL') || (m.area === area);
+                let matchProduce = (produce === 'ALL') || (m.produceTypes.includes(produce));
+                
+                let matchDay = true;
+                if(day === 'TODAY') {
+                    const todayNum = new Date().getDay();
+                    matchDay = m.daysOpen.includes(todayNum);
+                } else if(day !== 'ALL') {
+                    matchDay = m.daysOpen.includes(parseInt(day));
+                }
+
+                return matchArea && matchProduce && matchDay;
+            });
+
+            // Update active tags UI
+            const tagsBox = document.getElementById('active-filter-tags');
+            tagsBox.innerHTML = `
+                <span class="bg-white px-2 py-0.5 rounded border border-emerald-200 text-emerald-800 font-medium">Area: ${area}</span>
+                <span class="bg-white px-2 py-0.5 rounded border border-emerald-200 text-emerald-800 font-medium">Day: ${day}</span>
+                <span class="bg-white px-2 py-0.5 rounded border border-emerald-200 text-emerald-800 font-medium">Category: ${produce}</span>
+            `;
+
+            navigateTo('markets');
+            renderMarkets(filtered);
+            showToast(`Found ${filtered.length} matching market(s)`, 'info');
+        }
+
+        function resetMarketFilters() {
+            document.getElementById('quick-area').value = 'ALL';
+            document.getElementById('quick-day').value = 'ALL';
+            document.getElementById('quick-produce').value = 'ALL';
+            document.getElementById('active-filter-tags').innerHTML = '<span class="bg-white px-2 py-0.5 rounded border border-emerald-200 text-emerald-800 font-medium">All Markets</span>';
+            renderMarkets();
+            showToast('Filters reset to default', 'info');
+        }
+
+        function renderProduce(categoryFilter = 'ALL') {
+            const grid = document.getElementById('produce-grid');
+            if(!grid) return;
+            grid.innerHTML = '';
+
+            const list = (categoryFilter === 'ALL') 
+                ? PRODUCE_DATA 
+                : PRODUCE_DATA.filter(p => p.category === categoryFilter);
+
+            list.forEach(p => {
+                const card = `
+                    <div class="bg-white rounded-3xl border border-gray-200 shadow-md p-4 space-y-3 hover:border-emerald-300 transition-all flex flex-col justify-between">
+                        <div>
+                            <img src="${p.image}" alt="${p.name}" class="w-full h-36 object-cover rounded-2xl mb-3" />
+                            <span class="text-[10px] font-extrabold uppercase bg-amber-100 text-amber-800 px-2 py-0.5 rounded-md">${p.category}</span>
+                            <h3 class="text-sm font-bold text-gray-900 mt-1">${p.name}</h3>
+                            <p class="text-xs text-gray-500 leading-snug mt-1">${p.desc}</p>
+                        </div>
+                        <div class="pt-3 border-t border-gray-100 flex justify-between items-center text-xs">
+                            <span class="font-bold text-egreen-700">${p.price}</span>
+                            <span class="text-[10px] font-medium text-gray-400"><i class="fa-solid fa-sun text-amber-500"></i> ${p.season}</span>
+                        </div>
+                    </div>
+                `;
+                grid.insertAdjacentHTML('beforeend', card);
+            });
+        }
+
+        function filterProduceCategory(cat) {
+            document.querySelectorAll('.produce-cat-btn').forEach(btn => {
+                btn.classList.remove('bg-egreen-600', 'text-white');
+                btn.classList.add('bg-white', 'text-gray-600');
+            });
+            event.target.classList.remove('bg-white', 'text-gray-600');
+            event.target.classList.add('bg-egreen-600', 'text-white');
+            renderProduce(cat);
+        }
+
+        function toggleBookmark(id) {
+            if(bookmarkedIds.includes(id)) {
+                bookmarkedIds = bookmarkedIds.filter(i => i !== id);
+                showToast('Removed from bookmarks', 'info');
+            } else {
+                bookmarkedIds.push(id);
+                showToast('Added to bookmarks! ⭐️', 'success');
+            }
+            localStorage.setItem('freshfind_bookmarks', JSON.stringify(bookmarkedIds));
+            updateBookmarkBadge();
+            renderMarkets();
+            if(activeSection === 'bookmarks') renderBookmarks();
+        }
+
+        function updateBookmarkBadge() {
+            const badge = document.getElementById('bookmark-badge');
+            if(badge) {
+                badge.textContent = bookmarkedIds.length;
+                if(bookmarkedIds.length > 0) badge.classList.remove('hidden');
+                else badge.classList.add('hidden');
+            }
+        }
+
+        function renderBookmarks() {
+            const container = document.getElementById('bookmarks-container');
+            if(!container) return;
+            container.innerHTML = '';
+
+            if(bookmarkedIds.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-12 bg-white rounded-3xl border border-gray-200 p-8">
+                        <i class="fa-regular fa-star text-4xl text-gray-300 mb-3"></i>
+                        <h3 class="text-base font-bold text-gray-800">No Bookmarks Saved Yet</h3>
+                        <p class="text-xs text-gray-500 mt-1">Click the star icon on any market card to save your favorite shopping spots.</p>
+                        <button onclick="navigateTo('markets')" class="mt-4 bg-egreen-600 text-white font-bold text-xs px-5 py-2.5 rounded-xl">Browse Markets</button>
+                    </div>
+                `;
+                return;
+            }
+
+            bookmarkedIds.forEach(id => {
+                const m = MARKETS_DATA.find(item => item.id === id);
+                if(!m) return;
+
+                const noteText = personalNotes[id] || '';
+
+                const itemHtml = `
+                    <div class="bg-white rounded-3xl border border-gray-200 p-6 shadow-md flex flex-col md:flex-row gap-6 items-start">
+                        <img src="${m.image}" alt="${m.name}" class="w-full md:w-44 h-32 object-cover rounded-2xl shrink-0" />
+                        
+                        <div class="flex-grow space-y-2 text-xs">
+                            <div class="flex justify-between items-center">
+                                <h3 class="text-base font-bold text-gray-900">${m.name}</h3>
+                                <button onclick="toggleBookmark('${m.id}')" class="text-red-500 font-bold hover:underline">Remove</button>
+                            </div>
+                            <p class="text-gray-500"><i class="fa-solid fa-location-dot text-emerald-600"></i> ${m.address}</p>
+                            
+                            <!-- Personal Note Input Area -->
+                            <div class="pt-2">
+                                <label class="block text-[11px] font-bold text-emerald-800 mb-1"><i class="fa-solid fa-pen-to-square"></i> Your Custom Shopping Note:</label>
+                                <textarea id="note-${m.id}" onblur="savePersonalNote('${m.id}')" placeholder="e.g. Remember to buy organic honey and fresh eggs on Saturday morning..." class="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none">${noteText}</textarea>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.insertAdjacentHTML('beforeend', itemHtml);
+            });
+        }
+
+        function savePersonalNote(id) {
+            const val = document.getElementById(`note-${id}`)?.value || '';
+            personalNotes[id] = val;
+            localStorage.setItem('freshfind_notes', JSON.stringify(personalNotes));
+            showToast('Personal note autosaved!', 'success');
+        }
+
+        // Export Bookmarks to formatted .txt File
+        function exportBookmarksTxt() {
+            if(bookmarkedIds.length === 0) {
+                showToast('No bookmarks available to export!', 'error');
+                return;
+            }
+
+            let textContent = `=======================================\n`;
+            textContent += `  FRESHFIND (eGREEN BASKET) BOOKMARKS\n`;
+            textContent += `  Generated on: ${new Date().toLocaleString()}\n`;
+            textContent += `=======================================\n\n`;
+
+            bookmarkedIds.forEach((id, idx) => {
+                const m = MARKETS_DATA.find(item => item.id === id);
+                if(m) {
+                    textContent += `${idx + 1}. ${m.name.toUpperCase()}\n`;
+                    textContent += `   Area: ${m.area}\n`;
+                    textContent += `   Address: ${m.address}\n`;
+                    textContent += `   Operating Hours: ${m.hoursText} (${m.daysText})\n`;
+                    textContent += `   Personal Note: ${personalNotes[id] || 'None'}\n`;
+                    textContent += `---------------------------------------\n`;
+                }
+            });
+
+            const blob = new Blob([textContent], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `FreshFind_Bookmarks_${Date.now()}.txt`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showToast('Exported bookmarks text summary!', 'success');
+        }
+
+        function toggleChatbot() {
+            const win = document.getElementById('chatbot-window');
+            win.classList.toggle('hidden');
+        }
+
+        function handleChatSubmit(e) {
+            e.preventDefault();
+            const input = document.getElementById('chat-input');
+            const msg = input.value.trim();
+            if(!msg) return;
+
+            appendChatMessage('user', msg);
+            input.value = '';
+
+            // Parser match
+            setTimeout(() => {
+                const reply = computeBotResponse(msg);
+                appendChatMessage('bot', reply);
+            }, 500);
+        }
+
+        function sendQuickReply(text) {
+            appendChatMessage('user', text);
+            setTimeout(() => {
+                const reply = computeBotResponse(text);
+                appendChatMessage('bot', reply);
+            }, 400);
+        }
+
+        function computeBotResponse(userMsg) {
+            const lower = userMsg.toLowerCase();
+            for(let rule of FAQ_RULES) {
+                if(rule.keywords.some(kw => lower.includes(kw))) {
+                    return rule.response;
+                }
+            }
+            return "I'm not sure about that query, but you can explore our Market Directory or Produce Guide sections for detailed information!";
+        }
+
+        function appendChatMessage(sender, text) {
+            const container = document.getElementById('chat-messages');
+            if(!container) return;
+
+            const isBot = sender === 'bot';
+            const html = `
+                <div class="flex gap-2 ${isBot ? '' : 'justify-end'}">
+                    ${isBot ? '<div class="w-6 h-6 rounded-full bg-emerald-100 text-egreen-700 flex items-center justify-center text-[10px] shrink-0 font-bold">🤖</div>' : ''}
+                    <div class="${isBot ? 'bg-emerald-50 text-emerald-900 border border-emerald-100 rounded-tl-none' : 'bg-egreen-600 text-white rounded-tr-none'} p-3 rounded-2xl max-w-[80%]">
+                        ${text}
+                    </div>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', html);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // Market Detail Modal
+        function openMarketModal(id) {
+            const m = MARKETS_DATA.find(item => item.id === id);
+            if(!m) return;
+
+            document.getElementById('modal-market-area').textContent = m.area;
+            document.getElementById('modal-market-title').textContent = m.name;
+            document.getElementById('modal-market-address').innerHTML = `<i class="fa-solid fa-location-dot"></i> ${m.address}`;
+            document.getElementById('modal-market-desc').textContent = m.desc;
+            document.getElementById('modal-market-hours').textContent = m.hoursText;
+            document.getElementById('modal-market-days').textContent = m.daysText;
+            document.getElementById('modal-market-rating').textContent = `${m.rating} / 5.0 (Verified Feedback)`;
+            document.getElementById('modal-map-label').textContent = `GPS Pin: Lat/Lng simulated for ${m.area}`;
+
+            const tagsContainer = document.getElementById('modal-market-tags');
+            tagsContainer.innerHTML = m.produceTypes.map(t => `<span class="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2.5 py-1 rounded-lg">${t}</span>`).join('');
+
+            const btn = document.getElementById('modal-bookmark-btn');
+            btn.onclick = () => { toggleBookmark(m.id); closeMarketModal(); };
+
+            document.getElementById('market-modal').classList.remove('hidden');
+        }
+
+        function closeMarketModal() {
+            document.getElementById('market-modal').classList.add('hidden');
+        }
+
+        // Auth Modal
+        function openAuthModal(mode) {
+            document.getElementById('auth-modal-title').textContent = mode === 'login' ? 'Log In to FreshFind' : 'Create FreshFind Account';
+            document.getElementById('auth-modal').classList.remove('hidden');
+        }
+        function closeAuthModal() { document.getElementById('auth-modal').classList.add('hidden'); }
+        function handleAuthSubmit(e) {
+            e.preventDefault();
+            closeAuthModal();
+            showToast('Successfully authenticated!', 'success');
+        }
+
+        // Share Modal
+        function openShareModal() { document.getElementById('share-modal').classList.remove('hidden'); }
+        function closeShareModal() { document.getElementById('share-modal').classList.add('hidden'); }
+        function simulatedShare(platform) {
+            showToast(`Shared bookmarks to ${platform}!`, 'success');
+            closeShareModal();
+        }
+        function copyShareLink() {
+            document.execCommand('copy');
+            showToast('Share link copied to clipboard!', 'info');
+            closeShareModal();
+        }
+
+        // Contact Form
+        function handleContactSubmit(e) {
+            e.preventDefault();
+            showToast('Thank you! Your message has been sent to our team.', 'success');
+            e.target.reset();
+        }
+
+        // Geolocation Finder
+        function findNearbyMarketGeo() {
+            const status = document.getElementById('geo-status');
+            status.textContent = 'Locating position...';
+
+            if ("geolocation" in navigator) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        status.textContent = 'Location detected! Showing nearest market.';
+                        showToast('Detected position! Directing to nearest market.', 'success');
+                        navigateTo('markets');
+                    },
+                    (error) => {
+                        status.textContent = 'Unable to fetch position. Displaying default directory.';
+                        showToast('Geolocation permission denied or unavailable.', 'error');
+                    }
+                );
+            } else {
+                status.textContent = 'Geolocation API not supported in browser.';
+            }
+        }
+
+        // Mobile Drawer Toggle
+        function toggleMobileMenu() {
+            document.getElementById('mobile-menu').classList.toggle('hidden');
+        }
+
+        // Global Toast Utility
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            if(!container) return;
+
+            const bgClass = type === 'success' ? 'bg-egreen-700' : (type === 'error' ? 'bg-red-600' : 'bg-gray-800');
+            const toast = document.createElement('div');
+            toast.className = `${bgClass} text-white text-xs font-semibold px-4 py-3 rounded-2xl shadow-xl pointer-events-auto flex items-center gap-2 transition-all transform translate-y-2 opacity-0`;
+            toast.innerHTML = `<i class="fa-solid ${type === 'success' ? 'fa-circle-check' : 'fa-circle-info'}"></i> ${message}`;
+
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            }, 10);
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        window.onload = function() {
+            // Start Realtime Clock Loop
+            setInterval(() => {
+                const now = new Date();
+                const clockEl = document.getElementById('realtime-clock');
+                if(clockEl) {
+                    clockEl.textContent = now.toLocaleTimeString();
+                }
+            }, 1000);
+
+            // Ticker status text
+            const ticker = document.getElementById('hero-status-ticker');
+            if(ticker) {
+                const openCount = MARKETS_DATA.filter(isMarketOpenNow).length;
+                ticker.textContent = `${openCount} Farmers Markets Open Right Now`;
+            }
+
+            // Initialize App State
+            updateBookmarkBadge();
+            renderMarkets();
+            renderProduce();
+        };
+    </script>
+</body>
+</html>

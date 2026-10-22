@@ -1,0 +1,49 @@
+body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8faf9;
+            color: #1f2937;
+        }
+
+        /* Glassmorphism utility */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(46, 125, 50, 0.12);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #81c784;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #2e7d32;
+        }
+
+        /* Animations */
+        @keyframes pulseGlow {
+            0%, 100% { box-shadow: 0 0 15px rgba(46, 125, 50, 0.2); }
+            50% { box-shadow: 0 0 25px rgba(46, 125, 50, 0.5); }
+        }
+        .pulse-glow {
+            animation: pulseGlow 3s infinite;
+        }
+
+        /* Chatbot Container Transition */
+        .chat-slide-enter {
+            transform: translateY(20px);
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .chat-slide-enter-active {
+            transform: translateY(0);
+            opacity: 1;
+        }
